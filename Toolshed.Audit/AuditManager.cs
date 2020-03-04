@@ -66,9 +66,14 @@ namespace Toolshed.Audit
             var activityUser = new AuditUserActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName)
             {
                 AuditType = auditActivity.AuditType,
-                On = auditActivity.On,
                 ExtraInfo = auditActivity.Description
             };
+
+            if (auditActivity.Entity != null && bool.TryParse(auditActivity.Entity, out bool isSuccess))
+            {
+                activityUser.IsSuccessful = isSuccess;
+            }
+
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
 

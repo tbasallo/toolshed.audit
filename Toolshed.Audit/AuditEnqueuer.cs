@@ -115,7 +115,7 @@ namespace Toolshed.Audit
                 await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
             }
         }
-        public async Task EnqueueLogin(string userId, string userName, string provider)
+        public async Task EnqueueLogin(string userId, string userName, string provider = "forms", bool isSuccess = true)
         {
             if (AuditSettings.IsLoginsEnabled)
             {
@@ -125,7 +125,8 @@ namespace Toolshed.Audit
                     AuditType = AuditActivityType.Login.ToString(),
                     ById = userId,
                     ByName = userName,
-                    Description = provider
+                    Description = provider,
+                    Entity = isSuccess.ToString()
                 };
                 await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
             }
