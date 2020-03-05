@@ -34,8 +34,64 @@ namespace Toolshed.Audit
 
         private QueueClient AuditQueue { get; }
 
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, null, null, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, null, null, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, List<RelatedEntity> related)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, related, null, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, List<PropertyComparison> changes)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, null, changes, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, List<RelatedEntity> related, List<PropertyComparison> changes)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, related, changes, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, List<RelatedEntity> related)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, related, null, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, List<PropertyComparison> changes)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, null, changes, default(object));
+        }
+        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string userId, string userName, List<RelatedEntity> related, List<PropertyComparison> changes)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, related, changes, default(object));
+        }
 
-        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string auditDescription, string userId, string userName)
+
+        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string userId, string userName, T entity)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, null, null, entity);
+        }
+        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, T entity)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, null, null, entity);
+
+        }
+        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string userId, string userName, List<RelatedEntity> related, T entity)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, null, related, null, entity);
+        }
+        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, List<RelatedEntity> related, T entity)
+        {
+            await Enqueue(entityType, entityId, type, userId, userName, auditDescription, related, null, entity);
+        }
+
+
+        //FOR NOW - THERE's NO OPTION WITH changes AND entity (as a shortcut) because this is a very uncommon case - if you're sending the entity, it's either new or deleted, but it wouldn't have changes
+        //if you really want that last combo - use the full method call
+
+
+        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string userId, string userName, string auditDescription, List<RelatedEntity> related, List<PropertyComparison> changes, T entity)
         {
             if (AuditSettings.IsEnabled)
             {
@@ -48,58 +104,23 @@ namespace Toolshed.Audit
                     Description = auditDescription
                 };
 
-                await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
-            }
-        }
-        public async Task Enqueue(string entityType, object entityId, AuditActivityType type, string auditDescription, string userId, string userName, List<PropertyComparison> changes)
-        {
-            if (AuditSettings.IsEnabled)
-            {
-                //1 item is built and queued, the queue will handle the details
-                var a = new AuditActivity(entityType, entityId)
+                if(changes != null && changes.Count > 0)
                 {
-                    AuditType = type.ToString(),
-                    ById = userId,
-                    ByName = userName,
-                    Description = auditDescription,
-                    Changes = System.Text.Json.JsonSerializer.Serialize(changes)
-                };
-                await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
-            }
-        }
-        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string auditDescription, string userId, string userName, T entity)
-        {
-            if (AuditSettings.IsEnabled)
-            {
-                //1 item is built and queued, the queue will handle the details
-                var a = new AuditActivity(entityType, entityId)
+                    a.Changes = System.Text.Json.JsonSerializer.Serialize(changes);
+                }
+                if (entity != null)
                 {
-                    AuditType = type.ToString(),
-                    ById = userId,
-                    ByName = userName,
-                    Description = auditDescription,
-                    Entity = System.Text.Json.JsonSerializer.Serialize(entity)
-                };
-                await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
-            }
-        }
-        public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, string auditDescription, string userId, string userName, List<PropertyComparison> changes, T entity)
-        {
-            if (AuditSettings.IsEnabled)
-            {
-                //1 item is built and queued, the queue will handle the details
-                var a = new AuditActivity(entityType, entityId)
+                    a.Entity = System.Text.Json.JsonSerializer.Serialize(entity);
+                }
+                if (related != null && related.Count > 0)
                 {
-                    AuditType = type.ToString(),
-                    ById = userId,
-                    ByName = userName,
-                    Description = auditDescription,
-                    Changes = System.Text.Json.JsonSerializer.Serialize(changes),
-                    Entity = System.Text.Json.JsonSerializer.Serialize(entity)
-                };
+                    a.Related = System.Text.Json.JsonSerializer.Serialize(related);
+                }
+
                 await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
             }
         }
+
 
         public async Task EnqueueHeartbeat(string userId, string userName)
         {
