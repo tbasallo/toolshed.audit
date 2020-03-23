@@ -25,6 +25,9 @@ namespace Toolshed.Audit
         public bool IsUser { get; set; }
         public DateTimeOffset LastUpdatedOn { get; set; }
 
+        public string EntityType { get; set; }
+        public string EntityId { get; set; }
+
         public string EntityPartitionKey { get; set; }
         public string EntityRowKey { get; set; }
 

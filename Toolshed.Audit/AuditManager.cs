@@ -43,10 +43,15 @@ namespace Toolshed.Audit
                 AuditType = auditActivity.AuditType,
                 EntityPartitionKey = auditActivity.PartitionKey,
                 EntityRowKey = auditActivity.RowKey,
-                On = auditActivity.On
+                On = auditActivity.On,
+                EntityType = auditActivity.EntityType,
+                EntityId = auditActivity.EntityId
             };
-
-            var activityHistory = new AuditActivityHistory(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.PartitionKey, auditActivity.RowKey) { };
+            var activityHistory = new AuditActivityHistory(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.PartitionKey, auditActivity.RowKey)
+            {
+                EntityType = auditActivity.EntityType,
+                EntityId = auditActivity.EntityId
+            };
 
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.Insert(activityUser));
@@ -102,8 +107,6 @@ namespace Toolshed.Audit
 
         async Task ExecuteAsync(CloudTable cloudTable, TableOperation tableOperation)
         {
-
-
             var userSaved = false;
             var userSaveAttempts = 0;
             while (!userSaved)

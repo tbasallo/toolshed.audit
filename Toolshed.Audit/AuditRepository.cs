@@ -19,24 +19,46 @@ namespace Toolshed.Audit
 
         public async Task<AuditDeletion> GetDeleteActivity(string partitionkey, string rowKey)
         {
-            var o = TableOperation.Retrieve(partitionkey, rowKey);
-            return (await AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions()).ExecuteAsync(o)).Result as AuditDeletion;
+            var o = TableOperation.Retrieve<AuditDeletion>(partitionkey, rowKey);
+            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions());
+            var d = await t.ExecuteAsync(o);
+            return d.Result as AuditDeletion;
         }
         public async Task<List<AuditActivityHistory>> GetAuditActivity(DateTime date, int pageCount = 1, int pageSize = 500)
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
             var query = new TableQuery<AuditActivityHistory>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMMdd")));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
 
-            return segment.Results;
+            if(pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
+
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
+
         public async Task<List<AuditActivity>> GetAuditActivity(string entityType, object entityId, int pageCount = 1, int pageSize = 250)
         {
+            return await GetAuditActivity(QueryHelper.GetPartitionKey(entityType, entityId), pageCount, pageSize);
+        }
+        public async Task<List<AuditActivity>> GetAuditActivity(string partitionkey, int pageCount = 1, int pageSize = 250)
+        {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities());
-            var query = new TableQuery<AuditActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, QueryHelper.GetPartitionKey(entityType, entityId)));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
+            var query = new TableQuery<AuditActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionkey));
+            if (pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
 
-            return segment.Results;
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
 
         /// <summary>
@@ -46,9 +68,16 @@ namespace Toolshed.Audit
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
+            if (pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
 
-            return segment.Results;
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
 
         /// <summary>
@@ -58,9 +87,16 @@ namespace Toolshed.Audit
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
+            if (pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
 
-            return segment.Results;
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
 
         /// <summary>
@@ -70,9 +106,16 @@ namespace Toolshed.Audit
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditLogins());
             var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
+            if (pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
 
-            return segment.Results;
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
 
         /// <summary>
@@ -82,9 +125,16 @@ namespace Toolshed.Audit
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditPermissions());
             var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
-            var segment = await t.ExecuteQuerySegmentedAsync(query.Skip((pageCount - 1) * pageSize).Take(pageSize).AsTableQuery(), null);
+            if (pageCount > 1)
+            {
+                query = query.Take(500).Skip((pageCount - 1) * pageSize).AsTableQuery();
+            }
+            else
+            {
+                query = query.Take(500);
+            }
 
-            return segment.Results;
+            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
         }
     }
 }
