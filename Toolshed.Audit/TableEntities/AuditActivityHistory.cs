@@ -12,7 +12,6 @@ namespace Toolshed.Audit
         {
             PartitionKey = activityOn.ToString("yyyyMMdd");
             RowKey = $"{auditRecordPartitionKey}_{auditRecordRowKey}";
-            LastUpdatedOn = activityOn;
 
             EntityPartitionKey = auditRecordPartitionKey;
             EntityRowKey = auditRecordRowKey;
@@ -23,7 +22,7 @@ namespace Toolshed.Audit
         }
 
         public bool IsUser { get; set; }
-        public DateTimeOffset LastUpdatedOn { get; set; }
+        public DateTimeOffset On { get; set; }
 
         public string EntityType { get; set; }
         public string EntityId { get; set; }

@@ -14,6 +14,12 @@ namespace Toolshed.Audit
         public static string ConnectionKey { get; private set; }
         public static string TablePrefix { get; set; }
 
+        /// <summary>
+        /// For tables that use a DATE BASED partition, this is the time zone that the UTC date is CONVERTED TO before saving. This means that QUERYING the partition must provide this date or use 
+        /// the helper method
+        /// </summary>
+        public static string PartitionTimeZone { get; set; }
+
         public static void SetQueueName(string queueName)
         {
             QueueName = queueName;

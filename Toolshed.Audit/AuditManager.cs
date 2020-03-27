@@ -47,10 +47,11 @@ namespace Toolshed.Audit
                 EntityId = auditActivity.EntityId
             };
             var auditUserHistoryActivity = new AuditUserHistoryActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName);
-            var activityHistory = new AuditActivityHistory(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.PartitionKey, auditActivity.RowKey)
+            var activityHistory = new AuditActivityHistory(TimeZoneHelper.GetDate(auditActivity.On), auditActivity.ById, auditActivity.ByName, auditActivity.PartitionKey, auditActivity.RowKey)
             {
                 EntityType = auditActivity.EntityType,
-                EntityId = auditActivity.EntityId
+                EntityId = auditActivity.EntityId,
+                On = auditActivity.On
             };
 
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));
