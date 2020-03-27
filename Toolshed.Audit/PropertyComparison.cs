@@ -10,23 +10,25 @@ namespace Toolshed.Audit
         public PropertyComparison(string name, object oldValue, object newValue)
         {
             Name = name;
-            Type = oldValue.GetType().Name;
-            if (newValue is Enum)
+            if (oldValue != null)
             {
+                Type = oldValue.GetType().Name;
                 OldValue = oldValue.ToString();
-                Newvalue = newValue.ToString();
             }
-            else
+            if(newValue != null)
             {
-                OldValue = oldValue.ToString();
-                Newvalue = newValue.ToString();
+                if (Type == null)
+                {
+                    Type = newValue.GetType().Name;
+                }
+                NewValue = newValue.ToString();
             }
         }
 
 
         public string Name { get; set; }
         public string OldValue { get; set; }
-        public string Newvalue { get; set; }
+        public string NewValue { get; set; }
         public string Type { get; set; }
     }
 }

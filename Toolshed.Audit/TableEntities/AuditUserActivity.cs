@@ -31,7 +31,7 @@ namespace Toolshed.Audit
         /// <summary>
         /// Extra info related to the type of audit. For instance, for logins this would include the provider, for permission exceptions this could be the resource being accessed
         /// </summary>
-        public string ExtraInfo { get; set; }        
+        public string ExtraInfo { get; set; }
 
         public override string ToString()
         {

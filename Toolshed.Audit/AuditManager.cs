@@ -43,10 +43,10 @@ namespace Toolshed.Audit
                 AuditType = auditActivity.AuditType,
                 EntityPartitionKey = auditActivity.PartitionKey,
                 EntityRowKey = auditActivity.RowKey,
-                On = auditActivity.On,
                 EntityType = auditActivity.EntityType,
                 EntityId = auditActivity.EntityId
             };
+            var auditUserHistoryActivity = new AuditUserHistoryActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName);
             var activityHistory = new AuditActivityHistory(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.PartitionKey, auditActivity.RowKey)
             {
                 EntityType = auditActivity.EntityType,
@@ -55,13 +55,17 @@ namespace Toolshed.Audit
 
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.Insert(activityUser));
+            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(auditUserHistoryActivity));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories()), TableOperation.InsertOrReplace(activityHistory));
 
-            if (auditActivity.GetActivityType() == AuditActivityType.Delete && auditActivity.Entity != null)
+            if (auditActivity.GetActivityType() == AuditActivityType.Delete)
             {
                 var deletion = new AuditDeletion(auditActivity.EntityType, auditActivity.EntityId)
                 {
-                    Entity = auditActivity.Entity
+                    Entity = auditActivity.Entity,
+                    ById = auditActivity.ById,
+                    ByName = auditActivity.ByName,
+                    On = auditActivity.On
                 };
                 await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), TableOperation.Insert(deletion));
             };
@@ -79,6 +83,7 @@ namespace Toolshed.Audit
                 activityUser.IsSuccessful = isSuccess;
             }
 
+            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
 

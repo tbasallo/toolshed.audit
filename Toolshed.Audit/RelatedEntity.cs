@@ -9,6 +9,12 @@ namespace Toolshed.Audit
     /// </summary>
     public class RelatedEntity
     {
+        public RelatedEntity() { }
+        public RelatedEntity(string entityType, object entityId)
+        {
+            EntityType = entityType;
+            EntityId = entityId.ToString();
+        }
         public string EntityType { get; set; }
         public string EntityId { get; set; }
         public string Description { get; set; }

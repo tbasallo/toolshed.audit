@@ -9,6 +9,9 @@ namespace Toolshed.Audit
     /// </summary>
     public class RelatedEntityActivity
     {
+        public RelatedEntityActivity() { }
+
+
         public string EntityType { get; set; }
         public string EntityId { get; set; }
 

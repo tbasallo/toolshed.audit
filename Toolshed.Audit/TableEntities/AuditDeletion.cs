@@ -22,6 +22,9 @@ namespace Toolshed.Audit
         public string EntityType { get; set; }
         public string EntityId { get; set; }
         public string Entity { get; set; }
+        public string ByName { get; internal set; }
+        public string ById { get; internal set; }
+        public DateTimeOffset On { get; internal set; }
 
         public override string ToString()
         {
