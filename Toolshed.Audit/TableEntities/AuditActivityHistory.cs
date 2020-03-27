@@ -17,8 +17,8 @@ namespace Toolshed.Audit
             EntityRowKey = auditRecordRowKey;
             IsUser = userId.IsEqualTo(auditRecordPartitionKey);
 
-            UserId = userId;
-            UserName = userName;
+            ById = userId;
+            ByName = userName;
         }
 
         public bool IsUser { get; set; }
@@ -30,8 +30,8 @@ namespace Toolshed.Audit
         public string EntityPartitionKey { get; set; }
         public string EntityRowKey { get; set; }
 
-        public string UserId { get; set; }
-        public string UserName { get; set; }
+        public string ById { get; set; }
+        public string ByName { get; set; }
 
         public override string ToString()
         {
