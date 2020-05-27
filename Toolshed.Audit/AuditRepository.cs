@@ -96,20 +96,33 @@ namespace Toolshed.Audit
         /// <summary>
         /// Returns a all of a users activities, including login and permission activities
         /// </summary>
-        public async Task<List<AuditUserActivity>> GetUserActivity(string userId, int pageCount = 1, int pageSize = 500)
+        public Task<TableQuerySegment<AuditUserActivity>> GetUserActivity(string userId, int pageSize = 500, TableContinuationToken tableContinuationToken = null)
+        {
+            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
+            var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));            
+            return t.ExecuteQuerySegmentedAsync(query.Take(pageSize), tableContinuationToken);
+        }
+        public async Task<List<AuditUserActivity>> GetUserActivity(string userId)
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
-            if (pageCount > 1)
+
+            var segment = await t.ExecuteQuerySegmentedAsync(query, null);
+
+            var model = new List<AuditUserActivity>();
+
+            if (segment.Results != null)
             {
-                query = query.Take(pageSize).Skip((pageCount - 1) * pageSize).AsTableQuery();
-            }
-            else
-            {
-                query = query.Take(pageSize);
+                model.AddRange(segment.Results.ToList());
             }
 
-            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
+            while (segment.ContinuationToken != null)
+            {
+                segment = await t.ExecuteQuerySegmentedAsync(query, segment.ContinuationToken);
+                model.AddRange(segment.Results.ToList());
+            }
+
+            return model;
         }
         public async Task<List<AuditUserActivity>> GetAllUsersActivity(int pageCount = 1, int pageSize = 500)
         {

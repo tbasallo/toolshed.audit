@@ -51,7 +51,8 @@ namespace Toolshed.Audit
             {
                 EntityType = auditActivity.EntityType,
                 EntityId = auditActivity.EntityId,
-                On = auditActivity.On
+                On = auditActivity.On,
+                AuditType = auditActivity.AuditType
             };
 
             await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));

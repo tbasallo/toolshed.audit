@@ -12,7 +12,7 @@ namespace Toolshed.Audit
         {
             PartitionKey = "USER";
             RowKey = userId;
-            UserId = PartitionKey;
+            UserId = userId;
             Name = name ?? userId;
             On = date;
         }
