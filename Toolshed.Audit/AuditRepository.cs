@@ -17,21 +17,22 @@ namespace Toolshed.Audit
 
         }
 
-        public async Task<List<AuditDeletion>> GetDeleteActivity(int pageCount = 1, int pageSize = 500)
+
+        public Task<TableQuerySegment<T>> GetSegmentedData<T>(CloudTable table, string partitionKey, int pageSize = 500, TableContinuationToken tableContinuationToken = null) where T : ITableEntity, new()
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions());
-            var query = new TableQuery<AuditDeletion>();
+            var query = new TableQuery<T>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+            return table.ExecuteQuerySegmentedAsync<T>(query.Take(pageSize), tableContinuationToken);
+        }
+        public Task<TableQuerySegment<T>> GetSegmentedData<T>(CloudTable table, int pageSize = 500, TableContinuationToken tableContinuationToken = null) where T : ITableEntity, new()
+        {
+            var query = new TableQuery<T>();
+            return table.ExecuteQuerySegmentedAsync<T>(query.Take(pageSize), tableContinuationToken);
+        }
 
-            if (pageCount > 1)
-            {
-                query = query.Take(pageSize).Skip((pageCount - 1) * pageSize).AsTableQuery();
-            }
-            else
-            {
-                query = query.Take(pageSize);
-            }
 
-            return (await t.ExecuteQuerySegmentedAsync(query, null)).Results;
+        public Task<TableQuerySegment<AuditDeletion>> GetDeleteActivity(int pageSize = 500, TableContinuationToken tableContinuationToken = null)
+        {
+            return GetSegmentedData<AuditDeletion>(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), pageSize, tableContinuationToken);
         }
         public async Task<AuditDeletion> GetDeleteActivity(string partitionkey, string rowKey)
         {
@@ -62,7 +63,7 @@ namespace Toolshed.Audit
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
             var query = new TableQuery<AuditActivityHistory>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMMdd")));
 
-            if(pageCount > 1)
+            if (pageCount > 1)
             {
                 query = query.Take(pageSize).Skip((pageCount - 1) * pageSize).AsTableQuery();
             }
@@ -99,7 +100,7 @@ namespace Toolshed.Audit
         public Task<TableQuerySegment<AuditUserActivity>> GetUserActivity(string userId, int pageSize = 500, TableContinuationToken tableContinuationToken = null)
         {
             var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
-            var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));            
+            var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
             return t.ExecuteQuerySegmentedAsync(query.Take(pageSize), tableContinuationToken);
         }
         public async Task<List<AuditUserActivity>> GetUserActivity(string userId)
