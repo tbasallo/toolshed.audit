@@ -6,7 +6,7 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
-    public static class AuditSettings
+    public static class ServiceManager
     {
         internal static StorageConnectionType StorageConnectionType { get; private set; }
 
@@ -87,14 +87,14 @@ namespace Toolshed.Audit
 
         public async static Task CreateQueuesIfNotExistsAsync(string queueName = null)
         {
-            if (AuditSettings.StorageConnectionType == StorageConnectionType.Key)
+            if (StorageConnectionType == StorageConnectionType.Key)
             {
-                var auditQueue = new QueueClient(new Uri($"{queueName ?? QueueName}.queue.core.windows.net"), new Azure.Storage.StorageSharedKeyCredential(StorageName, ConnectionKey));
-                await auditQueue.CreateAsync();
+                var auditQueue = new QueueClient(new Uri($"{StorageName}.queue.core.windows.net/{queueName ?? QueueName}"), new Azure.Storage.StorageSharedKeyCredential(StorageName, ConnectionKey));
+                await auditQueue.CreateIfNotExistsAsync();
             }
             else
             {
-                var auditQueue = new QueueClient(AuditSettings.ConnectionKey, queueName ?? QueueName);
+                var auditQueue = new QueueClient(ConnectionKey, queueName ?? QueueName);
                 await auditQueue.CreateAsync();
             }
         }
@@ -102,13 +102,13 @@ namespace Toolshed.Audit
         {
             if (StorageConnectionType == StorageConnectionType.Key)
             {
-                var auditQueue = new QueueClient(new Uri($"https://{StorageName}.queue.core.windows.net/{queueName ?? QueueName}"), new Azure.Storage.StorageSharedKeyCredential(StorageName, ConnectionKey));
-                auditQueue.Create();
+                var auditQueue = new QueueClient(new Uri($"{StorageName}.queue.core.windows.net/{queueName ?? QueueName}"), new Azure.Storage.StorageSharedKeyCredential(StorageName, ConnectionKey));
+                auditQueue.CreateIfNotExists();
             }
             else
             {
-                var auditQueue = new QueueClient(AuditSettings.ConnectionKey, queueName ?? QueueName);
-                auditQueue.Create();
+                var auditQueue = new QueueClient(ConnectionKey, queueName ?? QueueName);
+                auditQueue.CreateIfNotExists();
             }
         }
 
@@ -118,13 +118,13 @@ namespace Toolshed.Audit
             if (_cloudTableClient == null)
             {
                 CloudStorageAccount storageAccount;
-                if (AuditSettings.StorageConnectionType == StorageConnectionType.Key)
+                if (StorageConnectionType == StorageConnectionType.Key)
                 {
-                    storageAccount = new CloudStorageAccount(new StorageCredentials(AuditSettings.StorageName, AuditSettings.ConnectionKey), true);
+                    storageAccount = new CloudStorageAccount(new StorageCredentials(StorageName, ConnectionKey), true);
                 }
-                else if (AuditSettings.StorageConnectionType == StorageConnectionType.ConnectionString)
+                else if (StorageConnectionType == StorageConnectionType.ConnectionString)
                 {
-                    storageAccount = CloudStorageAccount.Parse(AuditSettings.ConnectionKey);
+                    storageAccount = CloudStorageAccount.Parse(ConnectionKey);
                 }
                 else
                 {

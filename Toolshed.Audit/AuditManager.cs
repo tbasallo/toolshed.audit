@@ -55,10 +55,10 @@ namespace Toolshed.Audit
                 AuditType = auditActivity.AuditType
             };
 
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.Insert(activityUser));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(auditUserHistoryActivity));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories()), TableOperation.InsertOrReplace(activityHistory));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditActivities()), TableOperation.Insert(auditActivity));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.Insert(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(auditUserHistoryActivity));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories()), TableOperation.InsertOrReplace(activityHistory));
 
             if (auditActivity.GetActivityType() == AuditActivityType.Delete)
             {
@@ -69,7 +69,7 @@ namespace Toolshed.Audit
                     ByName = auditActivity.ByName,
                     On = auditActivity.On
                 };
-                await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), TableOperation.Insert(deletion));
+                await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), TableOperation.Insert(deletion));
             };
         }
         async Task ProcessLogin(AuditActivity auditActivity)
@@ -85,15 +85,15 @@ namespace Toolshed.Audit
                 activityUser.IsSuccessful = isSuccess;
             }
 
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
 
             var activityLogin = new AuditLoginActivity(auditActivity.On.DateTime, auditActivity.ById, auditActivity.ByName)
             {
                 ExtraInfo = auditActivity.Description
             };
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditLogins()), TableOperation.InsertOrReplace(activityLogin));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditLogins()), TableOperation.InsertOrReplace(activityLogin));
         }
         async Task ProcessPermissionIssue(AuditActivity auditActivity)
         {
@@ -102,14 +102,14 @@ namespace Toolshed.Audit
                 AuditType = auditActivity.AuditType,
                 ExtraInfo = auditActivity.Description
             };
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers()), TableOperation.InsertOrReplace(activityUser));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUserLogins()), TableOperation.InsertOrReplace(activityUser));
 
             var activityPermission = new AuditPermissionActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.EntityType, auditActivity.EntityId)
             {
                 ExtraInfo = auditActivity.Description
             };
-            await ExecuteAsync(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditPermissions()), TableOperation.InsertOrReplace(activityPermission));
+            await ExecuteAsync(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditPermissions()), TableOperation.InsertOrReplace(activityPermission));
         }
 
         async Task ExecuteAsync(CloudTable cloudTable, TableOperation tableOperation)
