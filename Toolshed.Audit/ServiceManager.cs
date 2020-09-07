@@ -25,7 +25,7 @@ namespace Toolshed.Audit
             QueueName = queueName;
         }
 
-        public static string QueueName { get; private set; }
+        public static string QueueName { get; private set; } = "auditor-pending-items";
         public static bool IsEnabled { get; set; }
         public static bool IsLoginsEnabled { get; set; }
         public static bool IsPermissionsEnabled { get; set; }
