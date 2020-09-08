@@ -22,31 +22,31 @@ namespace Toolshed.Audit
 
         public static string AuditActivities()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditActivityTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditActivityTableName);
         }
         public static string AuditActivityHistories()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditActivityHistoryTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditActivityHistoryTableName);
         }
         public static string AuditDeletions()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditDeletionTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditDeletionTableName);
         }
         public static string AuditUsers()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditUserTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditUserTableName);
         }
         public static string AuditUserLogins()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditUserLoginsTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditUserLoginsTableName);
         }
         public static string AuditLogins()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditLoginsTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditLoginsTableName);
         }
         public static string AuditPermissions()
         {
-            return string.Format("{0}{1}", AuditSettings.TablePrefix, AuditPermissionsTableName);
+            return string.Format("{0}{1}", ServiceManager.TablePrefix, AuditPermissionsTableName);
         }
     }
 }

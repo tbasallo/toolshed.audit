@@ -17,18 +17,18 @@ namespace Toolshed.Audit
         }
         public AuditEnqueuer(string queueName)
         {
-            if (string.IsNullOrWhiteSpace(queueName) && string.IsNullOrWhiteSpace(AuditSettings.QueueName))
+            if (string.IsNullOrWhiteSpace(queueName) && string.IsNullOrWhiteSpace(ServiceManager.QueueName))
             {
                 throw new ArgumentNullException(nameof(queueName), "The queue name must be set in the settings or in the constructor for AuditManager");
             }
 
-            if (AuditSettings.StorageConnectionType == StorageConnectionType.Key)
+            if (ServiceManager.StorageConnectionType == StorageConnectionType.Key)
             {
-                AuditQueue = new QueueClient(new Uri($"https://{AuditSettings.StorageName}.queue.core.windows.net/{queueName ?? AuditSettings.QueueName}"), new Azure.Storage.StorageSharedKeyCredential(AuditSettings.StorageName, AuditSettings.ConnectionKey));
+                AuditQueue = new QueueClient(new Uri($"https://{ServiceManager.StorageName}.queue.core.windows.net/{queueName ?? ServiceManager.QueueName}"), new Azure.Storage.StorageSharedKeyCredential(ServiceManager.StorageName, ServiceManager.ConnectionKey));
             }
             else
             {
-                AuditQueue = new QueueClient(AuditSettings.ConnectionKey, queueName ?? AuditSettings.QueueName);
+                AuditQueue = new QueueClient(ServiceManager.ConnectionKey, queueName ?? ServiceManager.QueueName);
             }
         }
 
@@ -93,7 +93,7 @@ namespace Toolshed.Audit
 
         public async Task Enqueue<T>(string entityType, object entityId, AuditActivityType type, object userId, string userName, string auditDescription, List<RelatedEntity> related, List<PropertyComparison> changes, T entity)
         {
-            if (AuditSettings.IsEnabled)
+            if (ServiceManager.IsEnabled)
             {
                 //1 item is built and queued, the queue will handle the details
                 var a = new AuditActivity(entityType, entityId)
@@ -124,7 +124,7 @@ namespace Toolshed.Audit
 
         public async Task EnqueueHeartbeat(object userId, string userName)
         {
-            if (AuditSettings.IsLoginsEnabled)
+            if (ServiceManager.IsLoginsEnabled)
             {
                 //1 item is built and queued, the queue will handle the details
                 var a = new AuditActivity(userId.ToString(), userName)
@@ -138,7 +138,7 @@ namespace Toolshed.Audit
         }
         public async Task EnqueueLogin(object userId, string userName, string provider = "forms", bool isSuccess = true)
         {
-            if (AuditSettings.IsLoginsEnabled)
+            if (ServiceManager.IsLoginsEnabled)
             {
                 //1 item is built and queued, the queue will handle the details
                 var a = new AuditActivity(userId.ToString(), userName)
@@ -154,7 +154,7 @@ namespace Toolshed.Audit
         }
         public async Task EnqueuePermissionException(object userId, string userName, string resource)
         {
-            if (AuditSettings.IsPermissionsEnabled)
+            if (ServiceManager.IsPermissionsEnabled)
             {
                 //1 item is built and queued, the queue will handle the details
                 var a = new AuditActivity(userId.ToString(), userName)
@@ -169,7 +169,7 @@ namespace Toolshed.Audit
         }
         public async Task EnqueuePermissionException(object userId, string userName, string entityType, object entityId, string resource)
         {
-            if (AuditSettings.IsPermissionsEnabled)
+            if (ServiceManager.IsPermissionsEnabled)
             {
                 //1 item is built and queued, the queue will handle the details
                 var a = new AuditActivity(userId.ToString(), userName)

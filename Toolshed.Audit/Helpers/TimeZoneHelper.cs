@@ -9,24 +9,24 @@ namespace Toolshed.Audit
     {
         public static DateTime GetDate(DateTime date)
         {
-            if (string.IsNullOrEmpty(AuditSettings.PartitionTimeZone))
+            if (string.IsNullOrEmpty(ServiceManager.PartitionTimeZone))
             {
                 return date;
             }
             else
             {
-                return date.ToTimeZone(AuditSettings.PartitionTimeZone);
+                return date.ToTimeZone(ServiceManager.PartitionTimeZone);
             }
         }
         public static DateTimeOffset GetDate(DateTimeOffset date)
         {
-            if (string.IsNullOrEmpty(AuditSettings.PartitionTimeZone))
+            if (string.IsNullOrEmpty(ServiceManager.PartitionTimeZone))
             {
                 return date;
             }
             else
             {
-                return date.ToTimeZone(AuditSettings.PartitionTimeZone);
+                return date.ToTimeZone(ServiceManager.PartitionTimeZone);
             }
         }
     }

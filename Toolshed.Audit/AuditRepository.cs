@@ -32,19 +32,19 @@ namespace Toolshed.Audit
 
         public Task<TableQuerySegment<AuditDeletion>> GetDeleteActivity(int pageSize = 500, TableContinuationToken tableContinuationToken = null)
         {
-            return GetSegmentedData<AuditDeletion>(AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), pageSize, tableContinuationToken);
+            return GetSegmentedData<AuditDeletion>(ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditDeletions()), pageSize, tableContinuationToken);
         }
         public async Task<AuditDeletion> GetDeleteActivity(string partitionkey, string rowKey)
         {
             var o = TableOperation.Retrieve<AuditDeletion>(partitionkey, rowKey);
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditDeletions());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditDeletions());
             var d = await t.ExecuteAsync(o);
             return d.Result as AuditDeletion;
         }
 
         public async Task<List<AuditActivityHistory>> GetAuditActivity(int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
             var query = new TableQuery<AuditActivityHistory>();
 
             if (pageCount > 1)
@@ -60,7 +60,7 @@ namespace Toolshed.Audit
         }
         public async Task<List<AuditActivityHistory>> GetAuditActivity(DateTime date, int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditActivityHistories());
             var query = new TableQuery<AuditActivityHistory>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMMdd")));
 
             if (pageCount > 1)
@@ -80,7 +80,7 @@ namespace Toolshed.Audit
         }
         public async Task<List<AuditActivity>> GetAuditActivity(string partitionkey, int pageCount = 1, int pageSize = 1000)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditActivities());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditActivities());
             var query = new TableQuery<AuditActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionkey));
             if (pageCount > 1)
             {
@@ -99,13 +99,13 @@ namespace Toolshed.Audit
         /// </summary>
         public Task<TableQuerySegment<AuditUserActivity>> GetUserActivity(string userId, int pageSize = 500, TableContinuationToken tableContinuationToken = null)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
             return t.ExecuteQuerySegmentedAsync(query.Take(pageSize), tableContinuationToken);
         }
         public async Task<List<AuditUserActivity>> GetUserActivity(string userId)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
 
             var segment = await t.ExecuteQuerySegmentedAsync(query, null);
@@ -127,7 +127,7 @@ namespace Toolshed.Audit
         }
         public async Task<List<AuditUserActivity>> GetAllUsersActivity(int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUsers());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUsers());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "USER"));
             if (pageCount > 1)
             {
@@ -147,7 +147,7 @@ namespace Toolshed.Audit
         /// </summary>
         public async Task<List<AuditUserActivity>> GetUserLoginActivity(string userId, int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditUserLogins());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditUserLogins());
             var query = new TableQuery<AuditUserActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userId));
             if (pageCount > 1)
             {
@@ -166,7 +166,7 @@ namespace Toolshed.Audit
         /// </summary>
         public async Task<List<AuditPermissionActivity>> GetLoginActivity(DateTime date, int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditLogins());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditLogins());
             var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
             if (pageCount > 1)
             {
@@ -185,7 +185,7 @@ namespace Toolshed.Audit
         /// </summary>
         public async Task<List<AuditPermissionActivity>> GetPermissionExceptionActivity(DateTime date, int pageCount = 1, int pageSize = 500)
         {
-            var t = AuditSettings.GetTableClient().GetTableReference(TableAssist.AuditPermissions());
+            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditPermissions());
             var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
             if (pageCount > 1)
             {
