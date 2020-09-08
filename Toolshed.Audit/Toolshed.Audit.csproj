@@ -6,7 +6,8 @@
     <PackageProjectUrl>https://github.com/tbasallo/toolshed.audit</PackageProjectUrl>
     <RepositoryType>Git</RepositoryType>
     <Description>A simple auditing framework that uses Azure queues and tables</Description>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.4.0" />
