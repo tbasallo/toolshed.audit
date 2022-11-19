@@ -1,12 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RepositoryUrl>https://github.com/tbasallo/toolshed.audit</RepositoryUrl>
     <PackageProjectUrl>https://github.com/tbasallo/toolshed.audit</PackageProjectUrl>
     <RepositoryType>Git</RepositoryType>
     <Description>A simple auditing framework that uses Azure queues and tables</Description>
-    <Version>2.0.3</Version>
+    <Version>2.0.4</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
