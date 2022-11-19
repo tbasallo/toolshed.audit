@@ -62,7 +62,7 @@ namespace Toolshed.Audit
         public static void InitConnectionString(string connectionString, string tablePrefix = null, bool isEnabled = true)
         {
             ConnectionKey = connectionString;
-            StorageConnectionType = StorageConnectionType.Key;
+            StorageConnectionType = StorageConnectionType.ConnectionString;
             TablePrefix = tablePrefix;
             IsEnabled = isEnabled;
             IsLoginsEnabled = isEnabled;
