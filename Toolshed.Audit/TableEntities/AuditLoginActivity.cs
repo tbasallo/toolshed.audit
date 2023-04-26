@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
-    public class AuditLoginActivity : TableEntity, IRowIncrementable
+    public class AuditLoginActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncrementable
     {
         public AuditLoginActivity() { }
         public AuditLoginActivity(DateTimeOffset date, string userId, string userName)

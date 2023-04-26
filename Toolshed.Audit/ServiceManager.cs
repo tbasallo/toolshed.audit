@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Azure.Storage.Queues;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Queues;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
@@ -111,33 +110,5 @@ namespace Toolshed.Audit
                 auditQueue.CreateIfNotExists();
             }
         }
-
-        static CloudTableClient _cloudTableClient;
-        internal static CloudTableClient GetTableClient()
-        {
-            if (_cloudTableClient == null)
-            {
-                CloudStorageAccount storageAccount;
-                if (StorageConnectionType == StorageConnectionType.Key)
-                {
-                    storageAccount = new CloudStorageAccount(new StorageCredentials(StorageName, ConnectionKey), true);
-                }
-                else if (StorageConnectionType == StorageConnectionType.ConnectionString)
-                {
-                    storageAccount = CloudStorageAccount.Parse(ConnectionKey);
-                }
-                else
-                {
-                    throw new NotImplementedException("Unknown Unimplemented Connection to Storage");
-                }
-
-                //makes sense here...how small?
-                // ServicePointManager.FindServicePoint(storageAccount.TableEndpoint).UseNagleAlgorithm = true;
-                _cloudTableClient = storageAccount.CreateCloudTableClient();
-            }
-
-            return _cloudTableClient;
-        }
-
     }
 }

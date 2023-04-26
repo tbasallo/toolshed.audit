@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
@@ -12,7 +9,7 @@ namespace Toolshed.Audit
         /// Set the entity's ROWKEY to reverse ticks for better reverse ordering when pulling out of storage
         /// </summary>
         /// <param name="entity"></param>
-        public static void SetRowKeyToReverseTicks(this TableEntity entity)
+        public static void SetRowKeyToReverseTicks(this Toolshed.AzureStorage.BaseTableEntity entity)
         {
             entity.RowKey = string.Format("{0:D19}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks);
         }

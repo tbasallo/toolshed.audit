@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
-    public class AuditActivityHistory : TableEntity
+    public class AuditActivityHistory : Toolshed.AzureStorage.BaseTableEntity
     {
         public AuditActivityHistory() { }
         public AuditActivityHistory(DateTimeOffset activityOn, string userId, string userName, string auditRecordPartitionKey, string auditRecordRowKey)

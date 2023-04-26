@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace Toolshed.Audit
 {
     /// <summary>
     /// The actual item deleted. The details for this deletion are available in the object's log
     /// </summary>
-    public class AuditDeletion : TableEntity, IRowIncrementable
+    public class AuditDeletion : Toolshed.AzureStorage.BaseTableEntity, IRowIncrementable
     {
         public AuditDeletion() { }
         public AuditDeletion(string entityType, object entityId)

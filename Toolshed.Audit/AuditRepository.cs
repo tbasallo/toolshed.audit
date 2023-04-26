@@ -1,18 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos.Table;
-using System.Linq;
-using Microsoft.Azure.Cosmos.Table.Queryable;
+﻿using Azure.Data.Tables;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Toolshed.Audit
 {
     /// <summary>
     /// Repository for querying against the audit tables. No modifications occur here, only querying
     /// </summary>
-    public class AuditRepository
+    public class AuditRepository : AzureStorageBaseService
     {
-        public AuditRepository()
+        public AuditRepository() : base(ServiceManager.ConnectionKey)
         {
 
         }
@@ -185,8 +184,22 @@ namespace Toolshed.Audit
         /// </summary>
         public async Task<List<AuditPermissionActivity>> GetPermissionExceptionActivity(DateTime date, int pageCount = 1, int pageSize = 500)
         {
-            var t = ServiceManager.GetTableClient().GetTableReference(TableAssist.AuditPermissions());
-            var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
+            var t = GetTableClient(TableAssist.AuditPermissions());
+            var query = t.QueryAsync<AuditPermissionActivity>(x => x.PartitionKey == date.ToString("yyyyMM"));
+
+
+            var p = t.QueryAsync<AuditPermissionActivity>(x => x.PartitionKey == "", maxPerPage: pageSize);
+            await foreach (var secret in p.(pageSize))
+            {
+                Console.WriteLine($"TakeAsync: {secret.Name}");
+            }
+
+            //https://stackoverflow.com/questions/68772240/how-to-filter-the-query-result-for-pagination-in-tableclient-queryasync-azure
+
+
+
+
+            //var query = new TableQuery<AuditPermissionActivity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, date.ToString("yyyyMM")));
             if (pageCount > 1)
             {
                 query = query.Take(pageSize).Skip((pageCount - 1) * pageSize).AsTableQuery();

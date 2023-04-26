@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
+
 
 namespace Toolshed.Audit
 {
-    public class AuditActivity : TableEntity, IRowIncrementable
+    public class AuditActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncrementable
     {
         public AuditActivity() { }
         public AuditActivity(string entityType, object entityId)
