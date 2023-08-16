@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Toolshed.Audit
 {
@@ -20,6 +22,18 @@ namespace Toolshed.Audit
         public static void IncrementRowKey(this IRowIncrementable entity)
         {
             entity.RowKey = (Convert.ToInt64(entity.RowKey) + 1).ToString();
+        }
+
+        /// <summary>
+        /// Add required services to dependency injection
+        /// </summary>
+        /// <param name="services"></param>
+        public static void AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString)
+        {
+            ServiceManager.InitConnectionString(azureStorageConnectionString);
+
+            services.AddScoped<AuditRepository>();
+            services.AddScoped<AuditEnqueuer>();
         }
     }
 }

@@ -17,6 +17,9 @@ public class AuditEnqueuer
         {
             throw new ArgumentNullException(nameof(ServiceManager.QueueName), "The queue name must be set in the settings or in the constructor for AuditManager");
         }
+
+        AuditQueue = new QueueClient(ServiceManager.ConnectionString, ServiceManager.QueueName);
+
     }
     public AuditEnqueuer(string queueName)
     {

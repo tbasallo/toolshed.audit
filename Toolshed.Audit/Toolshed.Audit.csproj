@@ -6,7 +6,7 @@
 		<PackageProjectUrl>https://github.com/tbasallo/toolshed.audit</PackageProjectUrl>
 		<RepositoryType>Git</RepositoryType>
 		<Description>A simple auditing framework that uses Azure queues and tables</Description>
-		<Version>7.2.0</Version>
+		<Version>7.3.0</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -15,6 +15,7 @@
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
 		<PackageReference Include="Azure.Storage.Common" Version="12.16.0" />
 		<PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
 		<PackageReference Include="Toolshed" Version="7.29.0" />
 		<PackageReference Include="Toolshed.AzureStorage" Version="7.4.0" />
 	</ItemGroup>
