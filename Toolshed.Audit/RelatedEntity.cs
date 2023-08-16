@@ -15,8 +15,8 @@ namespace Toolshed.Audit
             EntityType = entityType;
             EntityId = entityId.ToString();
         }
-        public string EntityType { get; set; }
-        public string EntityId { get; set; }
-        public string Description { get; set; }
+        public string EntityType { get; set; } = null!;
+        public string EntityId { get; set; } = null!;
+        public string? Description { get; set; }
     }
 }

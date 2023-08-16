@@ -26,9 +26,9 @@ namespace Toolshed.Audit
         }
 
 
-        public string Name { get; set; }
-        public string OldValue { get; set; }
-        public string NewValue { get; set; }
-        public string Type { get; set; }
+        public string Name { get; set; } = null!;
+        public string OldValue { get; set; } = null!;
+        public string NewValue { get; set; } = null!;
+        public string Type { get; set; } = null!;
     }
 }
