@@ -15,14 +15,14 @@ namespace Toolshed.Audit
             On = date;
         }
 
-        public string UserId { get; set; }
-        public string Name { get; set; }
+        public string UserId { get; set; } = "";
+        public string Name { get; set; } = "";
         public DateTimeOffset On { get; set; }
 
         /// <summary>
         /// The resource that was accessed. Used by resource tracking and permission exceptions
         /// </summary>
-        public string ExtraInfo { get; set; }
+        public string? ExtraInfo { get; set; }
 
         public override string ToString()
         {

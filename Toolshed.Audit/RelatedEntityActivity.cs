@@ -12,8 +12,8 @@ namespace Toolshed.Audit
         public RelatedEntityActivity() { }
 
 
-        public string EntityType { get; set; }
-        public string EntityId { get; set; }
+        public string EntityType { get; set; } = "";
+        public string EntityId { get; set; } = "";
 
         public string GetPartitionKey()
         {

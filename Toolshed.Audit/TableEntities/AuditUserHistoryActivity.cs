@@ -14,8 +14,8 @@ namespace Toolshed.Audit
             On = date;
         }
 
-        public string UserId { get; set; }
-        public string Name { get; set; }
+        public string UserId { get; set; } = "";
+        public string Name { get; set; } = "";
         public DateTimeOffset On { get; set; }
 
         public override string ToString()

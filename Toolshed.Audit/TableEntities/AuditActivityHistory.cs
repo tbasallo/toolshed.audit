@@ -22,15 +22,15 @@ namespace Toolshed.Audit
         public DateTimeOffset On { get; set; }
 
 
-        public string EntityType { get; set; }
-        public string EntityId { get; set; }
+        public string EntityType { get; set; } = "";
+        public string EntityId { get; set; } = "";
 
-        public string AuditType { get; set; }
-        public string EntityPartitionKey { get; set; }
-        public string EntityRowKey { get; set; }
+        public string AuditType { get; set; } = "";
+        public string EntityPartitionKey { get; set; } = "";
+        public string EntityRowKey { get; set; } = "";
 
-        public string ById { get; set; }
-        public string ByName { get; set; }
+        public string ById { get; set; } = "";
+        public string ByName { get; set; } = "";
 
 
         public override string ToString()

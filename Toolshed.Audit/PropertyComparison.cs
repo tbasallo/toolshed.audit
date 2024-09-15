@@ -13,7 +13,7 @@ namespace Toolshed.Audit
             if (oldValue != null)
             {
                 Type = oldValue.GetType().Name;
-                OldValue = oldValue.ToString();
+                OldValue = oldValue.ToString() ?? "";
             }
             if(newValue != null)
             {
@@ -21,7 +21,7 @@ namespace Toolshed.Audit
                 {
                     Type = newValue.GetType().Name;
                 }
-                NewValue = newValue.ToString();
+                NewValue = newValue.ToString() ?? "";
             }
         }
 

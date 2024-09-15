@@ -9,23 +9,17 @@ public class AuditManager
 {
     public static async Task AddActivity(AuditActivity auditActivity)
     {
-        switch (auditActivity.GetActivityType())
+        if(auditActivity.AuditType == "Login" || auditActivity.AuditType == "Heartbeat")
         {
-            case AuditActivityType.Login:
-            case AuditActivityType.Heartbeat:
-                await ProcessLogin(auditActivity);
-                break;
-            case AuditActivityType.Permission:
-                await ProcessPermissionIssue(auditActivity);
-                break;
-            case AuditActivityType.Create:
-            case AuditActivityType.Update:
-            case AuditActivityType.Delete:
-            case AuditActivityType.Info:
-            case AuditActivityType.Access:
-            default:
-                await ProcessActivity(auditActivity);
-                break;
+            await ProcessLogin(auditActivity);
+        }
+        else if (auditActivity.AuditType == "Permission")
+        {
+            await ProcessPermissionIssue(auditActivity);
+        }
+        else
+        {
+            await ProcessActivity(auditActivity);
         }
     }
 
@@ -53,7 +47,7 @@ public class AuditManager
         await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(auditUserHistoryActivity);
         await ServiceManager.GetTableClient(TableAssist.AuditActivityHistories()).UpsertEntityAsync(activityHistory);
 
-        if (auditActivity.GetActivityType() == AuditActivityType.Delete)
+        if (auditActivity.AuditType == AuditActivityType.Delete)
         {
             var deletion = new AuditDeletion(auditActivity.EntityType, auditActivity.EntityId)
             {
@@ -62,7 +56,7 @@ public class AuditManager
                 ByName = auditActivity.ByName,
                 On = auditActivity.On
             };
-            await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).UpsertEntityAsync(deletion);                
+            await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).UpsertEntityAsync(deletion);
         };
     }
 
@@ -80,7 +74,7 @@ public class AuditManager
         }
 
         await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(activityUser);
-        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).UpsertEntityAsync(activityUser);            
+        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).UpsertEntityAsync(activityUser);
         var activityLogin = new AuditLoginActivity(auditActivity.On.DateTime, auditActivity.ById, auditActivity.ByName)
         {
             ExtraInfo = auditActivity.Description
@@ -98,12 +92,12 @@ public class AuditManager
 
         await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(activityUser);
         await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).UpsertEntityAsync(activityUser);
-        
+
         var activityPermission = new AuditPermissionActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.EntityType, auditActivity.EntityId)
         {
             ExtraInfo = auditActivity.Description
         };
-        await ServiceManager.GetTableClient(TableAssist.AuditPermissions()).UpsertEntityAsync(activityPermission);            
+        await ServiceManager.GetTableClient(TableAssist.AuditPermissions()).UpsertEntityAsync(activityPermission);
     }
 
 }

@@ -19,9 +19,9 @@ public class AuditRepository : AzureStorageBaseService
 
     }
 
-    public static async Task<AuditDeletion> GetDeleteActivity(string partitionkey, string rowKey)
-    {            
-        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).GetEntityWhenExistsAsync<AuditDeletion>(partitionkey, rowKey);;
+    public static async Task<AuditDeletion?> GetDeleteActivity(string partitionKey, string rowKey)
+    {
+        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).GetEntityWhenExistsAsync<AuditDeletion>(partitionKey, rowKey);;
     }
 
 
@@ -32,12 +32,12 @@ public class AuditRepository : AzureStorageBaseService
         return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivity>(QueryHelper.GetPartitionKey(entityType, entityId), pageSize, continuationToken);
     }
     public static async Task<Page<AuditActivity>> GetAuditActivity(string partitionKey, int pageSize = 1000, string? continuationToken = null)
-    {            
+    {
         return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivity>(partitionKey, pageSize, continuationToken);
     }
     public static async Task<Page<AuditActivityHistory>> GetAuditActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivityHistory>(date.ToString("yyyyMMdd"), pageSize, continuationToken);            
+        return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivityHistory>(date.ToString("yyyyMMdd"), pageSize, continuationToken);
     }
     public static async Task<Page<AuditDeletion>> GetDeleteActivity(int pageSize = 500, string? continuationToken = null)
     {

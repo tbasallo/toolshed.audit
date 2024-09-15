@@ -13,7 +13,7 @@ namespace Toolshed.Audit
         public RelatedEntity(string entityType, object entityId)
         {
             EntityType = entityType;
-            EntityId = entityId.ToString();
+            EntityId = entityId.ToString() ?? entityType;
         }
         public string EntityType { get; set; } = null!;
         public string EntityId { get; set; } = null!;

@@ -8,16 +8,16 @@ namespace Toolshed.Audit;
 
 public static class ServiceManager
 {
-    
+
     public static string StorageName { get; private set; } = null!;
     public static string ConnectionString { get; private set; } = null!;
-    public static string TablePrefix { get; set; } = null!;
+    public static string? TablePrefix { get; set; } = null!;
 
     /// <summary>
     /// For tables that use a DATE BASED partition, this is the time zone that the UTC date is CONVERTED TO before saving. This means that QUERYING the partition must provide this date or use
     /// the helper method
     /// </summary>
-    public static string PartitionTimeZone { get; set; }
+    public static string? PartitionTimeZone { get; set; }
 
     public static void SetQueueName(string queueName)
     {
@@ -32,18 +32,18 @@ public static class ServiceManager
     public static bool IsEnabled { get; set; }
     public static bool IsLoginsEnabled { get; set; }
     public static bool IsPermissionsEnabled { get; set; }
-    
+
     public static void InitConnectionString(string connectionString, bool isEnabled)
     {
-        ConnectionString = connectionString;            
+        ConnectionString = connectionString;
         IsEnabled = isEnabled;
         IsLoginsEnabled = isEnabled;
         IsPermissionsEnabled = isEnabled;
     }
-    
+
     public static void InitConnectionString(string connectionString, string? tablePrefix = null, bool isEnabled = true)
     {
-        ConnectionString = connectionString;            
+        ConnectionString = connectionString;
         TablePrefix = tablePrefix;
         IsEnabled = isEnabled;
         IsLoginsEnabled = isEnabled;
