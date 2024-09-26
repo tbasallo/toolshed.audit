@@ -7,7 +7,7 @@ namespace Toolshed.Audit
     public class PropertyComparison
     {
         public PropertyComparison() { }
-        public PropertyComparison(string name, object oldValue, object newValue)
+        public PropertyComparison(string name, object? oldValue, object? newValue)
         {
             Name = name;
             if (oldValue != null)
