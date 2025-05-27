@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Toolshed.Audit;
 
@@ -9,7 +10,7 @@ public class AuditManager
 {
     public static async Task AddActivity(AuditActivity auditActivity)
     {
-        if(auditActivity.AuditType == "Login" || auditActivity.AuditType == "Heartbeat")
+        if (auditActivity.AuditType == "Login" || auditActivity.AuditType == "Heartbeat")
         {
             await ProcessLogin(auditActivity);
         }
@@ -47,6 +48,26 @@ public class AuditManager
         await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(auditUserHistoryActivity);
         await ServiceManager.GetTableClient(TableAssist.AuditActivityHistories()).UpsertEntityAsync(activityHistory);
 
+        var related = auditActivity.GetRelated();
+        if (related.Count > 0)
+        {
+            foreach (var relatedActivity in related)
+            {
+                var relatedAuditActivity = new AuditActivity(relatedActivity.EntityType, relatedActivity.EntityId, auditActivity.AuditType)
+                {
+                    ById = auditActivity.ById,
+                    ByName = auditActivity.ByName,
+                    On = auditActivity.On,
+                    Description = relatedActivity.Description ?? auditActivity.Description,
+                    Related = (new List<RelatedEntity> { new(auditActivity.EntityType, auditActivity.EntityId) }).ToJson(), // this is the main entity related to the activity, so we can link back to it
+                    //Entity = auditActivity.Entity, -- this entry is meant ot be informational for related events, not the main entity                    
+                    //Changes = auditActivity.Changes,-- this doesn't apply here, since it's the child
+                    //Related = auditActivity.Related - this would be dumb
+                };
+                await ServiceManager.GetTableClient(TableAssist.AuditActivities()).UpsertEntityAsync(relatedAuditActivity);
+            }
+        }
+
         if (auditActivity.AuditType == AuditActivityType.Delete)
         {
             var deletion = new AuditDeletion(auditActivity.EntityType, auditActivity.EntityId)
@@ -57,7 +78,7 @@ public class AuditManager
                 On = auditActivity.On
             };
             await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).UpsertEntityAsync(deletion);
-        };
+        }        
     }
 
     static async Task ProcessLogin(AuditActivity auditActivity)
