@@ -123,6 +123,13 @@ public class AuditEnqueuer
             await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
         }
     }
+    public async Task Enqueue(AuditActivity auditActivity)
+    {
+        if (ServiceManager.IsEnabled)
+        {            
+            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(auditActivity).ToBase64());
+        }
+    }
 
 
     public async Task EnqueueHeartbeat(object userId, string userName)

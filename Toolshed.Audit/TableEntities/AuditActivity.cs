@@ -6,6 +6,11 @@ namespace Toolshed.Audit;
 
 public class AuditActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncrementable
 {
+    private static readonly System.Text.Json.JsonSerializerOptions CachedJsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public AuditActivity() { }
     public AuditActivity(string entityType, object entityId)
     {
@@ -45,7 +50,7 @@ public class AuditActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncremen
     {
         if (!string.IsNullOrWhiteSpace(Changes))
         {
-            return System.Text.Json.JsonSerializer.Deserialize<List<PropertyComparison>>(Changes, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            return System.Text.Json.JsonSerializer.Deserialize<List<PropertyComparison>>(Changes, CachedJsonSerializerOptions) ?? [];
         }
 
         return [];
@@ -55,10 +60,9 @@ public class AuditActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncremen
     {
         if (!string.IsNullOrWhiteSpace(Related))
         {
-            return System.Text.Json.JsonSerializer.Deserialize<List<RelatedEntity>>(Related, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            return System.Text.Json.JsonSerializer.Deserialize<List<RelatedEntity>>(Related, CachedJsonSerializerOptions) ?? [];
         }
 
         return [];
     }
-
 }

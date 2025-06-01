@@ -1,34 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Toolshed.Audit
+namespace Toolshed.Audit;
+
+public readonly struct PropertyComparison
 {
-    public class PropertyComparison
+    public string Name { get; init; }
+    public string OldValue { get; init; }
+    public string NewValue { get; init; }
+    public string Type { get; init; }
+
+    public PropertyComparison(string name, object? oldValue, object? newValue)
     {
-        public PropertyComparison() { }
-        public PropertyComparison(string name, object? oldValue, object? newValue)
+        Name = name;
+        string type = string.Empty;
+        string oldVal = string.Empty;
+        string newVal = string.Empty;
+
+        if (oldValue != null)
         {
-            Name = name;
-            if (oldValue != null)
-            {
-                Type = oldValue.GetType().Name;
-                OldValue = oldValue.ToString() ?? "";
-            }
-            if(newValue != null)
-            {
-                if (Type == null)
-                {
-                    Type = newValue.GetType().Name;
-                }
-                NewValue = newValue.ToString() ?? "";
-            }
+            type = oldValue.GetType().Name;
+            oldVal = oldValue.ToString() ?? string.Empty;
         }
-
-
-        public string Name { get; set; } = null!;
-        public string OldValue { get; set; } = null!;
-        public string NewValue { get; set; } = null!;
-        public string Type { get; set; } = null!;
+        if (newValue != null)
+        {
+            if (string.IsNullOrEmpty(type))
+                type = newValue.GetType().Name;
+            newVal = newValue.ToString() ?? string.Empty;
+        }
+        Type = type;
+        OldValue = oldVal;
+        NewValue = newVal;
     }
 }
