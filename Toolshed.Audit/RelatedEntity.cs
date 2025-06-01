@@ -7,10 +7,11 @@ public class RelatedEntity
 {
     public RelatedEntity() { }
 
-    public RelatedEntity(string entityType, object entityId)
+    public RelatedEntity(string entityType, object entityId, string? description = null)
     {
         EntityType = entityType;
         EntityId = entityId.ToString() ?? entityType;
+        Description = description;
     }
 
     /// <summary>
