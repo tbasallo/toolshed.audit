@@ -16,15 +16,15 @@ jobs:
 
     steps:
     - name: Check out Repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.x
 
     - name: Pack
-      run: dotnet pack Toolshed.Audit\\Toolshed.Audit.csproj -c Release
+      run: dotnet pack Toolshed.Audit/Toolshed.Audit.csproj -c Release
 
-    - name: Publish to GitHub packages
-      run: dotnet nuget push /home/runner/work/toolshed.audit/Toolshed.Audit/Toolshed.Audit/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Publish to NuGet
+      run: dotnet nuget push Toolshed.Audit/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
