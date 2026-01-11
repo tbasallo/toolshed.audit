@@ -23,8 +23,14 @@ jobs:
       with:
         dotnet-version: 10.x
 
+    - name: Restore dependencies
+      run: dotnet restore Toolshed.Audit/Toolshed.Audit.csproj
+
+    - name: Build
+      run: dotnet build Toolshed.Audit/Toolshed.Audit.csproj -c Release --no-restore
+
     - name: Pack
-      run: dotnet pack Toolshed.Audit/Toolshed.Audit.csproj -c Release
+      run: dotnet pack Toolshed.Audit/Toolshed.Audit.csproj -c Release --no-build
 
     - name: Publish to NuGet
       run: dotnet nuget push Toolshed.Audit/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
