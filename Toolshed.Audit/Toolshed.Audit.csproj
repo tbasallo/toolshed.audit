@@ -6,7 +6,8 @@
 		<PackageProjectUrl>https://github.com/tbasallo/toolshed.audit</PackageProjectUrl>
 		<RepositoryType>Git</RepositoryType>
 		<Description>A simple auditing framework that uses Azure queues and tables</Description>
-		<Version>10.0.0</Version>
+		<Version>10.0</Version>
+		<FileVersion>10.0</FileVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
