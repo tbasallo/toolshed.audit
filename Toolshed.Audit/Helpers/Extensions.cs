@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -25,15 +26,21 @@ namespace Toolshed.Audit
         }
 
         /// <summary>
-        /// Add required services to dependency injection
+        /// Sets the connectioinstring and optional queue name and then the scoped services into DI.
+        /// If yo uwant to set init values via the ServiceManager, do so after calling this method.
         /// </summary>
         /// <param name="services"></param>
-        public static void AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString)
+        public static void AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString, string? queueName = null)
         {
             ServiceManager.InitConnectionString(azureStorageConnectionString);
+            if (!string.IsNullOrEmpty(queueName))
+            {
+                ServiceManager.SetQueueName(queueName!);
+            }
 
             services.AddScoped<AuditRepository>();
             services.AddScoped<AuditEnqueuer>();
+
         }
     }
 }

@@ -16,8 +16,8 @@
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
 		<PackageReference Include="Azure.Storage.Common" Version="12.26.0" />
 		<PackageReference Include="Azure.Storage.Queues" Version="12.25.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
-		<PackageReference Include="Toolshed" Version="10.0.0" />
-		<PackageReference Include="Toolshed.AzureStorage" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+		<PackageReference Include="Toolshed" Version="10.0.157" />
+		<PackageReference Include="Toolshed.AzureStorage" Version="10.0.39" />
 	</ItemGroup>
 </Project>
