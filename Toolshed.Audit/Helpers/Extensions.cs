@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Toolshed.Audit
 {
@@ -27,37 +28,23 @@ namespace Toolshed.Audit
         }
 
         /// <summary>
-        /// Sets the connection string and optional queue name and tablePrefix and then the scoped services into DI.
-        /// If you want to set init values via the ServiceManager, do so after calling this method.
+        /// Initializes auditing and registers a keyed <see cref="AuditEnqueuer"/> and <see cref="AuditRepository"/> per queue.
+        /// When no queues are configured, the default queue (<see cref="ServiceManager.DefaultQueueName"/>) with no table prefix is used.
+        /// Inject with [FromKeyedServices("queue-name")] using the lower case queue name (see <see cref="ServiceManager.GetServiceKey"/>).
         /// </summary>
-        /// <param name="services"></param>
-        public static void AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString, string? queueName = null, string? tablePrefix = null)
+        public static IServiceCollection AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString, Action<AuditOptions>? configure = null)
         {
-            ServiceManager.InitConnectionString(azureStorageConnectionString, queueName: queueName, tablePrefix: tablePrefix);
+            ServiceManager.Init(azureStorageConnectionString, configure);
 
-            services.AddScoped<AuditRepository>();
-            services.AddScoped<AuditEnqueuer>();
-
-        }
-
-        /// <summary>
-        /// Sets the connection string and a dictionary with queue names and their associated table prefixes. and then the scoped services into DI.
-        /// Additionally, the default queue and table will be created
-        /// </summary>
-        /// <param name="services"></param>
-        public static void AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString, IDictionary<string, string?> queueTablePrefixes)
-        {
-            ServiceManager.InitConnectionString(azureStorageConnectionString, queueTablePrefixes, isDefaultTableAndQueueEnabled: true);
-
-            services.AddScoped<AuditRepository>();
-            services.AddScoped<AuditEnqueuer>();
-
-            //each queue is registered as a keyed service using the queue name - inject with [FromKeyedServices("queueName")]
-            foreach (var queueName in queueTablePrefixes.Keys)
+            foreach (var queueName in ServiceManager.QueueTablePrefixes.Keys)
             {
-                services.AddKeyedScoped<AuditEnqueuer>(queueName, (_, key) => new AuditEnqueuer((string)key!));
-                services.AddKeyedScoped<AuditRepository>(queueName, (_, key) => new AuditRepository((string)key!));
+                var key = ServiceManager.GetServiceKey(queueName);
+                services.TryAddKeyedScoped(key, (_, _) => new AuditEnqueuer(queueName));
+                services.TryAddKeyedScoped(key, (_, _) => new AuditRepository(queueName));
             }
+            services.TryAddScoped<AuditJanitor>();
+
+            return services;
         }
     }
 }

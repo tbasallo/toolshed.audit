@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using Azure;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +9,30 @@ using System.Threading.Tasks;
 namespace Toolshed.Audit;
 
 
-//cleans up the messes
-internal class AuditJanitor
+/// <summary>
+/// Cleans up the messes. Processes the tables of every registered table prefix and the tables without a prefix. Tables that do not exist are skipped.
+/// </summary>
+public class AuditJanitor
 {
-    public async Task Delete(string partitionkeyStartsWith, DateTimeOffset maxDateToDelete, string? queueName = null)
+    public async Task Delete(string partitionkeyStartsWith, DateTimeOffset maxDateToDelete)
     {
         ArgumentException.ThrowIfNullOrEmpty(partitionkeyStartsWith);
 
-        var prefix = ServiceManager.GetTablePrefix(queueName);
+        foreach (var prefix in ServiceManager.TablePrefixes.Append(null).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            try
+            {
+                await Delete(partitionkeyStartsWith, maxDateToDelete, prefix);
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                //the tables for this prefix do not exist, nothing to clean up
+            }
+        }
+    }
+
+    static async Task Delete(string partitionkeyStartsWith, DateTimeOffset maxDateToDelete, string? prefix)
+    {
         var tc = ServiceManager.GetTableClient(TableAssist.AuditActivities(prefix));
         var history = ServiceManager.GetTableClient(TableAssist.AuditActivityHistories(prefix));
         var userTable = ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix));
@@ -45,7 +62,11 @@ internal class AuditJanitor
         // USER DELETIONS (parallelize per user group)
         await Task.WhenAll(users.GroupBy(x => x.Item1).Select(async user =>
         {
-            var userItems = await userTable.GetEntitiesAsync<Toolshed.Audit.AuditUserActivity>(user.Key);
+            var userItems = new List<AuditUserActivity>();
+            await foreach (var userItem in userTable.QueryAsync<AuditUserActivity>(x => x.PartitionKey == user.Key))
+            {
+                userItems.Add(userItem);
+            }
             foreach (var item in user)
             {
                 var match = userItems.FirstOrDefault(x => x.EntityPartitionKey == item.Item2 && x.EntityRowKey == item.Item3);

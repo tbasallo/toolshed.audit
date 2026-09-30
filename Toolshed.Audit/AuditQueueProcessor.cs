@@ -1,19 +1,28 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Toolshed.Audit;
 
 /// <summary>
-/// Manages the processing of queued items into the respective tables
+/// Processes queued items into the tables of the queue they were read from
 /// </summary>
-public class AuditManager
+public class AuditQueueProcessor
 {
     /// <summary>
-    /// Writes the activity to the tables using the table prefix registered for the queue name. 
-    /// When no queue name is provided (or it is not registered), the default <see cref="ServiceManager.TablePrefix"/> is used.
+    /// Writes the activity to the tables using the table prefix registered for the queue name.
+    /// The queue name is the queue the activity was read from. Throws when the queue is not registered.
     /// </summary>
-    public static async Task AddActivity(AuditActivity auditActivity, string? queueName = null)
+    public static async Task AddActivity(AuditActivity auditActivity, string queueName)
     {
+        ArgumentNullException.ThrowIfNull(auditActivity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(queueName);
+
+        if (!string.IsNullOrWhiteSpace(auditActivity.QueueName) && !string.Equals(auditActivity.QueueName, queueName, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"The activity was queued to '{auditActivity.QueueName}' but is being processed as '{queueName}'.", nameof(queueName));
+        }
+
         var prefix = ServiceManager.GetTablePrefix(queueName);
 
         if (auditActivity.AuditType == "Login" || auditActivity.AuditType == "Heartbeat")

@@ -41,6 +41,11 @@ public class AuditActivity : Toolshed.AzureStorage.BaseTableEntity, IRowIncremen
     public string? Related { get; set; }
     public string? Changes { get; set; }
 
+    /// <summary>
+    /// The queue the activity was sent to. Set by the AuditEnqueuer and verified when processed
+    /// </summary>
+    public string? QueueName { get; set; }
+
     public override string ToString()
     {
         return PartitionKey;

@@ -11,26 +11,16 @@ namespace Toolshed.Audit;
 /// </summary>
 public class AuditEnqueuer
 {
-    public AuditEnqueuer()
-    {
-        if (string.IsNullOrWhiteSpace(ServiceManager.QueueName))
-        {
-            throw new ArgumentNullException(nameof(ServiceManager.QueueName), "The queue name must be set in the settings or in the constructor for AuditManager");
-        }
-
-        AuditQueue = new QueueClient(ServiceManager.ConnectionString, ServiceManager.QueueName);
-
-    }
+    /// <summary>
+    /// Writes to the queue. Throws when the queue is not registered.
+    /// </summary>
     public AuditEnqueuer(string queueName)
     {
-        if (string.IsNullOrWhiteSpace(queueName))
-        {
-            throw new ArgumentNullException(nameof(queueName), "The queue name must be set in the settings or in the constructor for AuditManager");
-        }
-
-        AuditQueue = new QueueClient(ServiceManager.ConnectionString, queueName);
+        QueueName = ServiceManager.GetQueueName(queueName);
+        AuditQueue = new QueueClient(ServiceManager.ConnectionString, QueueName);
     }
 
+    public string QueueName { get; }
     private QueueClient AuditQueue { get; }
 
     public async Task Enqueue(string entityType, object entityId, string type, object userId, string userName)
@@ -120,14 +110,14 @@ public class AuditEnqueuer
                 a.Related = System.Text.Json.JsonSerializer.Serialize(related);
             }
 
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
+            await Send(a);
         }
     }
     public async Task Enqueue(AuditActivity auditActivity)
     {
         if (ServiceManager.IsEnabled)
         {
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(auditActivity).ToBase64());
+            await Send(auditActivity);
         }
     }
 
@@ -143,7 +133,7 @@ public class AuditEnqueuer
                 ById = ValueOrDefault(userId, userName),
                 ByName = userName
             };
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
+            await Send(a);
         }
     }
     public async Task EnqueueLogin(object userId, string userName, string provider = "forms", bool isSuccess = true)
@@ -159,7 +149,7 @@ public class AuditEnqueuer
                 Description = provider,
                 Entity = isSuccess.ToString()
             };
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
+            await Send(a);
         }
     }
     public async Task EnqueuePermissionException(object userId, string userName, string resource)
@@ -174,7 +164,7 @@ public class AuditEnqueuer
                 ByName = userName,
                 Description = resource
             };
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
+            await Send(a);
         }
     }
     public async Task EnqueuePermissionException(object userId, string userName, string entityType, object entityId, string resource)
@@ -191,7 +181,7 @@ public class AuditEnqueuer
                 EntityId = ValueOrDefault(entityId, entityType),
                 Description = resource
             };
-            await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
+            await Send(a);
         }
     }
 
@@ -204,5 +194,14 @@ public class AuditEnqueuer
 
         var text = value?.ToString();
         return string.IsNullOrWhiteSpace(text) ? fallback : text;
+    }
+
+    /// <summary>
+    /// Stamps the queue name on the activity so the processor can verify it is writing to the correct tables, then sends it
+    /// </summary>
+    async Task Send(AuditActivity auditActivity)
+    {
+        auditActivity.QueueName = QueueName;
+        await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(auditActivity).ToBase64());
     }
 }
