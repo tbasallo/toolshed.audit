@@ -62,11 +62,11 @@ public class AuditRepository : AzureStorageBaseService
     }
 
     /// <summary>
-    /// Returns all permission exceptions for the specified date
+    /// Returns all login activities for the specified month
     /// </summary>
-    public static async Task<Page<AuditPermissionActivity>> GetLoginActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
+    public static async Task<Page<AuditLoginActivity>> GetLoginActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditLogins()).GetEntitiesAsync<AuditPermissionActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditLogins()).GetEntitiesAsync<AuditLoginActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
     }
 
     /// <summary>

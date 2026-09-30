@@ -23,12 +23,12 @@ public class AuditEnqueuer
     }
     public AuditEnqueuer(string queueName)
     {
-        if (string.IsNullOrWhiteSpace(queueName) && string.IsNullOrWhiteSpace(ServiceManager.QueueName))
+        if (string.IsNullOrWhiteSpace(queueName))
         {
             throw new ArgumentNullException(nameof(queueName), "The queue name must be set in the settings or in the constructor for AuditManager");
         }
 
-        AuditQueue = new QueueClient(ServiceManager.ConnectionString, queueName ?? ServiceManager.QueueName);
+        AuditQueue = new QueueClient(ServiceManager.ConnectionString, queueName);
     }
 
     private QueueClient AuditQueue { get; }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Toolshed.Audit;
@@ -8,23 +8,29 @@ namespace Toolshed.Audit;
 /// </summary>
 public class AuditManager
 {
-    public static async Task AddActivity(AuditActivity auditActivity)
+    /// <summary>
+    /// Writes the activity to the tables using the table prefix registered for the queue name. 
+    /// When no queue name is provided (or it is not registered), the default <see cref="ServiceManager.TablePrefix"/> is used.
+    /// </summary>
+    public static async Task AddActivity(AuditActivity auditActivity, string? queueName = null)
     {
+        var prefix = ServiceManager.GetTablePrefix(queueName);
+
         if (auditActivity.AuditType == "Login" || auditActivity.AuditType == "Heartbeat")
         {
-            await ProcessLogin(auditActivity);
+            await ProcessLogin(auditActivity, prefix);
         }
         else if (auditActivity.AuditType == "Permission")
         {
-            await ProcessPermissionIssue(auditActivity);
+            await ProcessPermissionIssue(auditActivity, prefix);
         }
         else
         {
-            await ProcessActivity(auditActivity);
+            await ProcessActivity(auditActivity, prefix);
         }
     }
 
-    static async Task ProcessActivity(AuditActivity auditActivity)
+    static async Task ProcessActivity(AuditActivity auditActivity, string? prefix)
     {
         var activityUser = new AuditUserActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName)
         {
@@ -43,10 +49,10 @@ public class AuditManager
             AuditType = auditActivity.AuditType
         };
 
-        await ServiceManager.GetTableClient(TableAssist.AuditActivities()).UpsertEntityAsync(auditActivity);
-        await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(activityUser);
-        await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(auditUserHistoryActivity);
-        await ServiceManager.GetTableClient(TableAssist.AuditActivityHistories()).UpsertEntityAsync(activityHistory);
+        await ServiceManager.GetTableClient(TableAssist.AuditActivities(prefix)).UpsertEntityAsync(auditActivity);
+        await ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix)).UpsertEntityAsync(activityUser);
+        await ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix)).UpsertEntityAsync(auditUserHistoryActivity);
+        await ServiceManager.GetTableClient(TableAssist.AuditActivityHistories(prefix)).UpsertEntityAsync(activityHistory);
 
         var related = auditActivity.GetRelated();
         if (related.Count > 0)
@@ -64,7 +70,7 @@ public class AuditManager
                     //Changes = auditActivity.Changes,-- this doesn't apply here, since it's the child
                     //Related = auditActivity.Related - this would be dumb
                 };
-                await ServiceManager.GetTableClient(TableAssist.AuditActivities()).UpsertEntityAsync(relatedAuditActivity);
+                await ServiceManager.GetTableClient(TableAssist.AuditActivities(prefix)).UpsertEntityAsync(relatedAuditActivity);
             }
         }
 
@@ -77,11 +83,11 @@ public class AuditManager
                 ByName = auditActivity.ByName,
                 On = auditActivity.On
             };
-            await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).UpsertEntityAsync(deletion);
+            await ServiceManager.GetTableClient(TableAssist.AuditDeletions(prefix)).UpsertEntityAsync(deletion);
         }        
     }
 
-    static async Task ProcessLogin(AuditActivity auditActivity)
+    static async Task ProcessLogin(AuditActivity auditActivity, string? prefix)
     {
         var activityUser = new AuditUserActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName)
         {
@@ -94,16 +100,16 @@ public class AuditManager
             activityUser.IsSuccessful = isSuccess;
         }
 
-        await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(activityUser);
-        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).UpsertEntityAsync(activityUser);
+        await ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix)).UpsertEntityAsync(activityUser);
+        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins(prefix)).UpsertEntityAsync(activityUser);
         var activityLogin = new AuditLoginActivity(auditActivity.On.DateTime, auditActivity.ById, auditActivity.ByName)
         {
             ExtraInfo = auditActivity.Description
         };
-        await ServiceManager.GetTableClient(TableAssist.AuditPermissions()).UpsertEntityAsync(activityLogin);
+        await ServiceManager.GetTableClient(TableAssist.AuditLogins(prefix)).UpsertEntityAsync(activityLogin);
     }
 
-    static async Task ProcessPermissionIssue(AuditActivity auditActivity)
+    static async Task ProcessPermissionIssue(AuditActivity auditActivity, string? prefix)
     {
         var activityUser = new AuditUserActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName)
         {
@@ -111,14 +117,14 @@ public class AuditManager
             ExtraInfo = auditActivity.Description
         };
 
-        await ServiceManager.GetTableClient(TableAssist.AuditUsers()).UpsertEntityAsync(activityUser);
-        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).UpsertEntityAsync(activityUser);
+        await ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix)).UpsertEntityAsync(activityUser);
+        await ServiceManager.GetTableClient(TableAssist.AuditUserLogins(prefix)).UpsertEntityAsync(activityUser);
 
         var activityPermission = new AuditPermissionActivity(auditActivity.On, auditActivity.ById, auditActivity.ByName, auditActivity.EntityType, auditActivity.EntityId)
         {
             ExtraInfo = auditActivity.Description
         };
-        await ServiceManager.GetTableClient(TableAssist.AuditPermissions()).UpsertEntityAsync(activityPermission);
+        await ServiceManager.GetTableClient(TableAssist.AuditPermissions(prefix)).UpsertEntityAsync(activityPermission);
     }
 
 }

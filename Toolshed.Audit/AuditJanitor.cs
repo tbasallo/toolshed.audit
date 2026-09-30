@@ -11,29 +11,28 @@ namespace Toolshed.Audit;
 //cleans up the messes
 internal class AuditJanitor
 {
-    public async Task Delete(string partitionkeyStartsWith, DateTimeOffset maxDateToDelete)
+    public async Task Delete(string partitionkeyStartsWith, DateTimeOffset maxDateToDelete, string? queueName = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(partitionkeyStartsWith);
 
-        var tc = ServiceManager.GetTableClient(TableAssist.AuditActivities());
-        var history = ServiceManager.GetTableClient(TableAssist.AuditActivityHistories());
-        var userTable = ServiceManager.GetTableClient(TableAssist.AuditUsers());
-        var deletionsTable = ServiceManager.GetTableClient(TableAssist.AuditDeletions());
+        var prefix = ServiceManager.GetTablePrefix(queueName);
+        var tc = ServiceManager.GetTableClient(TableAssist.AuditActivities(prefix));
+        var history = ServiceManager.GetTableClient(TableAssist.AuditActivityHistories(prefix));
+        var userTable = ServiceManager.GetTableClient(TableAssist.AuditUsers(prefix));
 
-        string filter = $"PartitionKey ge '{partitionkeyStartsWith}'";// and PartitionKey le 'o'";
-        var allData = tc.Query<AuditActivity>(filter: filter).ToList();
+        var upperBound = partitionkeyStartsWith[..^1] + (char)(partitionkeyStartsWith[^1] + 1);
+        string filter = $"PartitionKey ge '{Escape(partitionkeyStartsWith)}' and PartitionKey lt '{Escape(upperBound)}'";
 
         var users = new ConcurrentBag<Tuple<string, string, string>>();
 
-
-        // Parallelize audit activity deletions
-        Parallel.ForEach(allData, item =>
+        await Parallel.ForEachAsync(tc.QueryAsync<AuditActivity>(filter: filter), new ParallelOptions { MaxDegreeOfParallelism = 16 }, async (item, ct) =>
         {
-            if (item.PartitionKey.StartsWith(partitionkeyStartsWith) && item.On < maxDateToDelete)
+            if (item.PartitionKey.StartsWith(partitionkeyStartsWith, StringComparison.Ordinal) && item.On < maxDateToDelete)
             {
                 //delete the activity
-                tc.DeleteEntity(item.PartitionKey, item.RowKey);
-                //delete the history
-                history.DeleteEntity(item.On.ToString("yyyyMMdd"), $"{item.PartitionKey}_{item.RowKey}");
+                await tc.DeleteEntityAsync(item.PartitionKey, item.RowKey, cancellationToken: ct);
+                //delete the history - partition uses the same time zone conversion as when it was written
+                await history.DeleteEntityAsync(TimeZoneHelper.GetDate(item.On).ToString("yyyyMMdd"), $"{item.PartitionKey}_{item.RowKey}", cancellationToken: ct);
                 //add the user info to delete later
                 //we can't do it now because we don't have the rowkey and we would have to load all the data for the user.
                 //In theory we could use the ticks to determine the rowkey, but....
@@ -52,9 +51,11 @@ internal class AuditJanitor
                 var match = userItems.FirstOrDefault(x => x.EntityPartitionKey == item.Item2 && x.EntityRowKey == item.Item3);
                 if (match is not null)
                 {
-                    await tc.DeleteEntityAsync(match.PartitionKey, match.RowKey);
+                    await userTable.DeleteEntityAsync(match.PartitionKey, match.RowKey);
                 }
             }
         }));
     }
+
+    static string Escape(string value) => value.Replace("'", "''");
 }
