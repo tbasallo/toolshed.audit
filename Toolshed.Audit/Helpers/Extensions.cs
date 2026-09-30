@@ -52,6 +52,12 @@ namespace Toolshed.Audit
             services.AddScoped<AuditRepository>();
             services.AddScoped<AuditEnqueuer>();
 
+            //each queue is registered as a keyed service using the queue name - inject with [FromKeyedServices("queueName")]
+            foreach (var queueName in queueTablePrefixes.Keys)
+            {
+                services.AddKeyedScoped<AuditEnqueuer>(queueName, (_, key) => new AuditEnqueuer((string)key!));
+                services.AddKeyedScoped<AuditRepository>(queueName, (_, key) => new AuditRepository((string)key!));
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Azure.Data.Tables;
 using System;
 using System.Collections.Concurrent;
@@ -14,66 +14,80 @@ namespace Toolshed.Audit;
 /// </summary>
 public class AuditRepository : AzureStorageBaseService
 {
-    public AuditRepository() : base(ServiceManager.ConnectionString)
+    /// <summary>
+    /// Queries the tables of the default queue
+    /// </summary>
+    public AuditRepository() : this(null)
     {
-
     }
 
-    public static async Task<AuditDeletion?> GetDeleteActivity(string partitionKey, string rowKey)
+    /// <summary>
+    /// Queries the tables using the table prefix registered for the queue name. Falls back to the default prefix when the queue is null or not registered.
+    /// </summary>
+    public AuditRepository(string? queueName) : base(ServiceManager.ConnectionString)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).GetEntityWhenExistsAsync<AuditDeletion>(partitionKey, rowKey);;
+        QueueName = string.IsNullOrWhiteSpace(queueName) ? ServiceManager.QueueName : queueName;
+        TablePrefix = ServiceManager.GetTablePrefix(queueName);
+    }
+
+    public string QueueName { get; }
+    public string? TablePrefix { get; }
+
+    public async Task<AuditDeletion?> GetDeleteActivity(string partitionKey, string rowKey)
+    {
+        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions(TablePrefix)).GetEntityWhenExistsAsync<AuditDeletion>(partitionKey, rowKey);
     }
 
 
 
 
-    public static async Task<Page<AuditActivity>> GetAuditActivity(string entityType, object entityId, int pageSize = 1000, string? continuationToken = null)
+    public async Task<Page<AuditActivity>> GetAuditActivity(string entityType, object entityId, int pageSize = 1000, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivity>(QueryHelper.GetPartitionKey(entityType, entityId), pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditActivities(TablePrefix)).GetEntitiesAsync<AuditActivity>(QueryHelper.GetPartitionKey(entityType, entityId), pageSize, continuationToken);
     }
-    public static async Task<Page<AuditActivity>> GetAuditActivity(string partitionKey, int pageSize = 1000, string? continuationToken = null)
+    public async Task<Page<AuditActivity>> GetAuditActivity(string partitionKey, int pageSize = 1000, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivity>(partitionKey, pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditActivities(TablePrefix)).GetEntitiesAsync<AuditActivity>(partitionKey, pageSize, continuationToken);
     }
-    public static async Task<Page<AuditActivityHistory>> GetAuditActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
+    public async Task<Page<AuditActivityHistory>> GetAuditActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditActivities()).GetEntitiesAsync<AuditActivityHistory>(date.ToString("yyyyMMdd"), pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditActivityHistories(TablePrefix)).GetEntitiesAsync<AuditActivityHistory>(date.ToString("yyyyMMdd"), pageSize, continuationToken);
     }
-    public static async Task<Page<AuditDeletion>> GetDeleteActivity(int pageSize = 500, string? continuationToken = null)
+    public async Task<Page<AuditDeletion>> GetDeleteActivity(int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions()).GetEntitiesAsync<AuditDeletion>(pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditDeletions(TablePrefix)).GetEntitiesAsync<AuditDeletion>(pageSize, continuationToken);
     }
 
     /// <summary>
     /// Returns a all of a users activities, including login and permission activities
     /// </summary>
-    public static async Task<Page<AuditUserActivity>> GetUserActivity(string userId, int pageSize = 1000, string? continuationToken = null)
+    public async Task<Page<AuditUserActivity>> GetUserActivity(string userId, int pageSize = 1000, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditUsers()).GetEntitiesAsync<AuditUserActivity>(userId, pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditUsers(TablePrefix)).GetEntitiesAsync<AuditUserActivity>(userId, pageSize, continuationToken);
     }
 
 
     /// <summary>
     /// Returns a users login and permission activities, nothing else
     /// </summary>
-    public static async Task<Page<AuditUserActivity>> GetUserLoginActivity(string userId, int pageSize = 100, string? continuationToken = null)
+    public async Task<Page<AuditUserActivity>> GetUserLoginActivity(string userId, int pageSize = 100, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditUserLogins()).GetEntitiesAsync<AuditUserActivity>(userId, pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditUserLogins(TablePrefix)).GetEntitiesAsync<AuditUserActivity>(userId, pageSize, continuationToken);
     }
 
     /// <summary>
     /// Returns all login activities for the specified month
     /// </summary>
-    public static async Task<Page<AuditLoginActivity>> GetLoginActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
+    public async Task<Page<AuditLoginActivity>> GetLoginActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditLogins()).GetEntitiesAsync<AuditLoginActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditLogins(TablePrefix)).GetEntitiesAsync<AuditLoginActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
     }
 
     /// <summary>
     /// Returns all permission exceptions for the specified date
     /// </summary>
-    public static async Task<Page<AuditPermissionActivity>> GetPermissionExceptionActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
+    public async Task<Page<AuditPermissionActivity>> GetPermissionExceptionActivity(DateTime date, int pageSize = 500, string? continuationToken = null)
     {
-        return await ServiceManager.GetTableClient(TableAssist.AuditPermissions()).GetEntitiesAsync<AuditPermissionActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
+        return await ServiceManager.GetTableClient(TableAssist.AuditPermissions(TablePrefix)).GetEntitiesAsync<AuditPermissionActivity>(date.ToString("yyyyMM"), pageSize, continuationToken);
     }
 }

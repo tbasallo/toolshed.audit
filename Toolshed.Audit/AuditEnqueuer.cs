@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,7 +102,7 @@ public class AuditEnqueuer
             var a = new AuditActivity(entityType, entityId)
             {
                 AuditType = type.ToString(),
-                ById = userId.ToString() ?? userName,
+                ById = ValueOrDefault(userId, userName),
                 ByName = userName,
                 Description = auditDescription
             };
@@ -126,7 +126,7 @@ public class AuditEnqueuer
     public async Task Enqueue(AuditActivity auditActivity)
     {
         if (ServiceManager.IsEnabled)
-        {            
+        {
             await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(auditActivity).ToBase64());
         }
     }
@@ -137,10 +137,10 @@ public class AuditEnqueuer
         if (ServiceManager.IsLoginsEnabled)
         {
             //1 item is built and queued, the queue will handle the details
-            var a = new AuditActivity(userId.ToString() ?? userName, userName)
+            var a = new AuditActivity(ValueOrDefault(userId, userName), userName)
             {
                 AuditType = AuditActivityType.Heartbeat,
-                ById = userId.ToString() ?? userName,
+                ById = ValueOrDefault(userId, userName),
                 ByName = userName
             };
             await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
@@ -151,10 +151,10 @@ public class AuditEnqueuer
         if (ServiceManager.IsLoginsEnabled)
         {
             //1 item is built and queued, the queue will handle the details
-            var a = new AuditActivity(userId.ToString()?? userName, userName)
+            var a = new AuditActivity(ValueOrDefault(userId, userName), userName)
             {
                 AuditType = AuditActivityType.Login,
-                ById = userId.ToString() ?? userName,
+                ById = ValueOrDefault(userId, userName),
                 ByName = userName,
                 Description = provider,
                 Entity = isSuccess.ToString()
@@ -167,10 +167,10 @@ public class AuditEnqueuer
         if (ServiceManager.IsPermissionsEnabled)
         {
             //1 item is built and queued, the queue will handle the details
-            var a = new AuditActivity(userId.ToString() ?? "Unknown", userName)
+            var a = new AuditActivity(ValueOrDefault(userId, "Unknown"), userName)
             {
                 AuditType = AuditActivityType.Permission,
-                ById = userId.ToString() ?? "Unknown",
+                ById = ValueOrDefault(userId, "Unknown"),
                 ByName = userName,
                 Description = resource
             };
@@ -182,16 +182,27 @@ public class AuditEnqueuer
         if (ServiceManager.IsPermissionsEnabled)
         {
             //1 item is built and queued, the queue will handle the details
-            var a = new AuditActivity(userId.ToString() ?? userName, userName)
+            var a = new AuditActivity(ValueOrDefault(userId, userName), userName)
             {
                 AuditType = AuditActivityType.Permission,
-                ById = userId.ToString() ?? userName,
+                ById = ValueOrDefault(userId, userName),
                 ByName = userName,
                 EntityType = entityType,
-                EntityId = entityId.ToString() ?? entityType,
+                EntityId = ValueOrDefault(entityId, entityType),
                 Description = resource
             };
             await AuditQueue.SendMessageAsync(System.Text.Json.JsonSerializer.Serialize(a).ToBase64());
         }
+    }
+
+    static string ValueOrDefault(object? value, string fallback)
+    {
+        if(value is null)
+        {
+            return fallback;
+        }
+
+        var text = value?.ToString();
+        return string.IsNullOrWhiteSpace(text) ? fallback : text;
     }
 }
