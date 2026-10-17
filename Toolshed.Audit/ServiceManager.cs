@@ -17,6 +17,12 @@ public static class ServiceManager
         [DefaultQueueName] = null
     };
 
+    /// <summary>
+    /// The queue used by the non-keyed <see cref="AuditEnqueuer"/> and <see cref="AuditRepository"/>.
+    /// This is <see cref="DefaultQueueName"/> when registered, otherwise the first configured queue.
+    /// </summary>
+    public static string DefaultQueue { get; private set; } = DefaultQueueName;
+
     public static string StorageName { get; private set; } = null!;
     public static string ConnectionString { get; private set; } = null!;
 
@@ -56,6 +62,7 @@ public static class ServiceManager
 
         ConnectionString = connectionString;
         _queueTablePrefixes = new Dictionary<string, string?>(options.Queues, StringComparer.OrdinalIgnoreCase);
+        DefaultQueue = options.Queues.ContainsKey(DefaultQueueName) ? DefaultQueueName : options.FirstQueueName!;
         IsEnabled = options.IsEnabled;
         IsLoginsEnabled = options.IsLoginsEnabled;
         IsPermissionsEnabled = options.IsPermissionsEnabled;

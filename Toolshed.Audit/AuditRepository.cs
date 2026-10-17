@@ -15,7 +15,14 @@ namespace Toolshed.Audit;
 public class AuditRepository : AzureStorageBaseService
 {
     /// <summary>
-    /// Queries the tables using the table prefix registered for the queue name. Throws when the queue is not registered.
+    /// Queries the tables of the default queue (<see cref="ServiceManager.DefaultQueue"/>)
+    /// </summary>
+    public AuditRepository() : this(ServiceManager.DefaultQueue)
+    {
+    }
+
+    /// <summary>
+    /// Queries the tables using the table prefix registered for the queue name.
     /// </summary>
     public AuditRepository(string queueName) : base(ServiceManager.ConnectionString)
     {

@@ -69,20 +69,46 @@ public class ConfigurationTests
     }
 
     [Fact]
-    public void AddToolshedAuditing_RegistersKeyedServicesOnly()
+    public void AddToolshedAuditing_RegistersKeyedAndDefaultServices()
     {
         var provider = new ServiceCollection()
             .AddToolshedAuditing(ConnectionString, o => o.UseDefaultQueue().AddQueue("app2", "B"))
             .BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        Assert.Null(scope.ServiceProvider.GetService<AuditEnqueuer>());
-        Assert.Null(scope.ServiceProvider.GetService<AuditRepository>());
+        Assert.Equal(ServiceManager.DefaultQueueName, scope.ServiceProvider.GetRequiredService<AuditEnqueuer>().QueueName);
+        Assert.Null(scope.ServiceProvider.GetRequiredService<AuditRepository>().TablePrefix);
 
         Assert.Equal("app2", scope.ServiceProvider.GetRequiredKeyedService<AuditEnqueuer>("app2").QueueName);
         Assert.Equal("B", scope.ServiceProvider.GetRequiredKeyedService<AuditRepository>("app2").TablePrefix);
         Assert.Null(scope.ServiceProvider.GetRequiredKeyedService<AuditRepository>(ServiceManager.DefaultQueueName).TablePrefix);
         Assert.NotNull(scope.ServiceProvider.GetService<AuditJanitor>());
+    }
+
+    [Fact]
+    public void NoConfiguration_NonKeyedServicesUseDefaultQueue()
+    {
+        var provider = new ServiceCollection()
+            .AddToolshedAuditing(ConnectionString)
+            .BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.Equal(ServiceManager.DefaultQueueName, scope.ServiceProvider.GetRequiredService<AuditEnqueuer>().QueueName);
+        Assert.Null(scope.ServiceProvider.GetRequiredService<AuditRepository>().TablePrefix);
+        Assert.Equal(ServiceManager.DefaultQueueName, new AuditEnqueuer().QueueName);
+    }
+
+    [Fact]
+    public void OnlyCustomQueues_DefaultIsFirstQueue()
+    {
+        var provider = new ServiceCollection()
+            .AddToolshedAuditing(ConnectionString, o => o.AddQueue("app1", "A").AddQueue("app2", "B"))
+            .BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.Equal("app1", scope.ServiceProvider.GetRequiredService<AuditEnqueuer>().QueueName);
+        Assert.Equal("A", scope.ServiceProvider.GetRequiredService<AuditRepository>().TablePrefix);
+        Assert.Equal("A", new AuditRepository().TablePrefix);
     }
 
     [Fact]

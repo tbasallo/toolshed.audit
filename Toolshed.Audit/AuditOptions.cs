@@ -22,6 +22,11 @@ public partial class AuditOptions
     /// </summary>
     public IReadOnlyDictionary<string, string?> Queues => _queues;
 
+    /// <summary>
+    /// The first queue added, used as the default when the default queue is not registered
+    /// </summary>
+    internal string? FirstQueueName { get; private set; }
+
     public bool IsEnabled { get; set; } = true;
     public bool IsLoginsEnabled { get; set; } = true;
     public bool IsPermissionsEnabled { get; set; } = true;
@@ -42,6 +47,7 @@ public partial class AuditOptions
             throw new ArgumentException($"The default queue '{ServiceManager.DefaultQueueName}' has already been added.");
         }
         _queues[ServiceManager.DefaultQueueName] = null;
+        FirstQueueName ??= ServiceManager.DefaultQueueName;
         return this;
     }
 
@@ -62,6 +68,7 @@ public partial class AuditOptions
 
         ValidateTablePrefix(tablePrefix);
         _queues[name] = tablePrefix;
+        FirstQueueName ??= name;
         return this;
     }
 

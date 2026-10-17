@@ -31,6 +31,7 @@ namespace Toolshed.Audit
         /// Initializes auditing and registers a keyed <see cref="AuditEnqueuer"/> and <see cref="AuditRepository"/> per queue.
         /// When no queues are configured, the default queue (<see cref="ServiceManager.DefaultQueueName"/>) with no table prefix is used.
         /// Inject with [FromKeyedServices("queue-name")] using the lower case queue name (see <see cref="ServiceManager.GetServiceKey"/>).
+        /// A non-keyed <see cref="AuditEnqueuer"/> and <see cref="AuditRepository"/> are also registered for the default queue (<see cref="ServiceManager.DefaultQueue"/>).
         /// </summary>
         public static IServiceCollection AddToolshedAuditing(this IServiceCollection services, string azureStorageConnectionString, Action<AuditOptions>? configure = null)
         {
@@ -42,6 +43,8 @@ namespace Toolshed.Audit
                 services.TryAddKeyedScoped(key, (_, _) => new AuditEnqueuer(queueName));
                 services.TryAddKeyedScoped(key, (_, _) => new AuditRepository(queueName));
             }
+            services.TryAddScoped(_ => new AuditEnqueuer(ServiceManager.DefaultQueue));
+            services.TryAddScoped(_ => new AuditRepository(ServiceManager.DefaultQueue));
             services.TryAddScoped<AuditJanitor>();
 
             return services;

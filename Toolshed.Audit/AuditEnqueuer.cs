@@ -12,6 +12,13 @@ namespace Toolshed.Audit;
 public class AuditEnqueuer
 {
     /// <summary>
+    /// Writes to the default queue (<see cref="ServiceManager.DefaultQueue"/>)
+    /// </summary>
+    public AuditEnqueuer() : this(ServiceManager.DefaultQueue)
+    {
+    }
+
+    /// <summary>
     /// Writes to the queue. Throws when the queue is not registered.
     /// </summary>
     public AuditEnqueuer(string queueName)
