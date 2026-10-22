@@ -35,6 +35,8 @@ await ServiceManager.CreateTablesIfNotExistsAsync();
 `AuditEnqueuer` and `AuditRepository` are registered as regular (non-keyed) scoped services that use the **default queue**:
 
 ```csharp
+using Toolshed.AzureStorage;
+
 public class CompanyService(AuditEnqueuer auditEnqueuer, AuditRepository auditRepository)
 {
     public async Task Update(Company company, string userId, string userName)
@@ -42,9 +44,11 @@ public class CompanyService(AuditEnqueuer auditEnqueuer, AuditRepository auditRe
         await auditEnqueuer.Enqueue("company", company.Id, AuditActivityType.Update, userId, userName);
     }
 
-    public Task<Page<AuditActivity>> History(int id) => auditRepository.GetAuditActivity("company", id);
+    public Task<TablePage<AuditActivity>> History(int id) => auditRepository.GetAuditActivity("company", id);
 }
 ```
+
+Paged repository queries return `TablePage<T>` with the query items and continuation token.
 
 Outside of DI, the parameterless constructors also use the default queue: `new AuditEnqueuer()` / `new AuditRepository()`.
 
